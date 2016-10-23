@@ -1,5 +1,5 @@
 import numpy as np
-import sys
+import random
 
 class Network(object):
 
@@ -25,6 +25,7 @@ class Network(object):
                 for k in xrange(0, n, mini_batch_size)]
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
+            print "Epoch {0} complete".format(j)
 
     def update_mini_batch(self, mini_batch, eta):
         nabla_b = [np.zeros(b.shape) for b in self.biases]
@@ -82,13 +83,26 @@ def as_vector(n):
     vec[n] = 1
     return vec
 
+def vectorize_inp(r):
+    vec = np.zeros((85,1))
+    p = 0
+    it = iter(r)
+    for x in it:
+        vec[p+x-1] = 1
+        vec[p+4+next(it)-1] = 1
+        p += 17
+    return vec
+
+def print_counts(r):
+    print [r.count(i) for i in range(10)]
+
 if __name__ == "__main__":
     train_data = np.loadtxt("train.csv", delimiter=',', skiprows=1)
-    train_input = [(np.reshape(row[:-1], (10,1)), as_vector(row[10])) for row in train_data]
-    net = Network([10, 10, 10])
-    net.SGD(train_input, epochs=10, mini_batch_size=5, eta=2)
+    train_input = [(np.reshape(vectorize_inp(row[:-1]), (85,1)), as_vector(row[10])) for row in train_data]
+    net = Network([85, 18, 10])
+    net.SGD(train_input, epochs=10, mini_batch_size=10, eta=3)
     test_data = np.loadtxt("test1.csv", delimiter=',', skiprows=1)
-    test_input = [np.reshape(row[1:], (10,1)) for row in test_data]
+    test_input = [np.reshape(vectorize_inp(row[1:]), (85,1)) for row in test_data]
     indices = [row[0] for row in test_data]
     result = net.evaluate(test_input)
     output_array = zip(indices, result)
